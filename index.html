@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#09090B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="San Carlo Next" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <title>San Carlo Next — Giro Clienti & Recupero Differenze</title>
+  <style>
+    :root {
+      --bg: #09090B;
+      --surface: #121216;
+      --surface-elevated: #1A1A20;
+      --surface-hover: #22222A;
+      --border: #27272A;
+      --border-light: #3F3F46;
+
+      --text: #FAFAFA;
+      --text-dim: #A1A1AA;
+      --text-muted: #71717A;
+
+      --sc-red: #E11D2E;
+      --sc-red-soft: rgba(225, 29, 46, 0.14);
+      --sc-gold: #F59E0B;
+      --sc-gold-soft: rgba(245, 158, 11, 0.14);
+      --sc-navy: #0B193D;
+
+      --emerald: #10B981;
+      --emerald-soft: rgba(16, 185, 129, 0.14);
+      --violet: #A78BFA;
+      --violet-soft: rgba(167, 139, 250, 0.15);
+
+      --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+      line-height: 1.4;
+    }
+
+    .mono {
+      font-family: var(--mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .app-container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 16px 14px 64px 14px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .brand-id {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+    .sc-badge-svg {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+    }
+    .brand-caption {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+    }
+    .top-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .icon-action {
+      height: 34px;
+      padding: 0 11px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.15s;
+    }
+    .icon-action:hover {
+      background: var(--surface-elevated);
+      color: var(--text);
+    }
+    .icon-action.danger {
+      color: #FCA5A5;
+      border-color: rgba(225, 29, 46, 0.35);
+      background: var(--sc-red-soft);
+    }
+
+    /* HERO COCKPIT: Anello circolare di avanzamento + 3 metriche chiave */
+    .cockpit-card {
+      background: linear-gradient(160deg, #141419 0%, #0E1322 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 18px;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+    @media (max-width: 560px) {
+      .cockpit-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .ring-wrap {
+        margin: 0 auto;
+      }
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 132px;
+      height: 132px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ring-svg {
+      width: 132px;
+      height: 132px;
+      transform: rotate(-90deg);
+    }
+    .ring-bg {
+      fill: none;
+      stroke: #27272A;
+      stroke-width: 10;
+    }
+    .ring-fg {
+      fill: none;
+      stroke: url(#scRingGrad);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 339.292;
+      stroke-dashoffset: 98.4;
+      transition: stroke-dashoffset 0.35s ease;
+    }
+    .ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ring-pct {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: -0.03em;
+    }
+    .ring-lbl {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--sc-gold);
+      font-weight: 700;
+    }
+
+    .cockpit-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .main-revenue-block {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .rev-kicker {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      font-weight: 700;
+    }
+    .rev-big {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--emerald);
+      line-height: 1.15;
+      margin-top: 2px;
+    }
+    .rev-sub {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .sub-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 440px) {
+      .sub-metrics-row { grid-template-columns: 1fr; text-align: left; }
+    }
+    .mini-stat {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+    .mini-lbl {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .mini-val {
+      font-size: 0.94rem;
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .mini-hint {
+      font-size: 0.67rem;
+      color: var(--text-dim);
+      margin-top: 1px;
+    }
+
+    /* DUE TESSERE INDIPENDENTI (Segmented Pill Bar) */
+    .tessera-switcher {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .tessera-btn {
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--sans);
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.18s ease;
+    }
+    .tessera-btn.active {
+      background: var(--sc-red);
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(225, 29, 46, 0.35);
+    }
+    .tessera-count {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .tessera-panel { display: none; }
+    .tessera-panel.active { display: block; }
+
+    .quick-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .search-field {
+      flex: 1;
+      height: 42px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 0 14px;
+      font-size: 0.86rem;
+      font-family: var(--sans);
+    }
+    .search-field:focus {
+      outline: none;
+      border-color: var(--sc-gold);
+    }
+    .btn-toggle-extra {
+      height: 42px;
+      padding: 0 14px;
+      border-radius: 12px;
+      background: var(--sc-gold-soft);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--sc-gold);
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .extra-drawer {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .extra-drawer.open { display: block; }
+    .extra-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .extra-grid .full { grid-column: span 2; }
+    .ctrl-input, .ctrl-select {
+      height: 38px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 0 10px;
+      font-size: 0.84rem;
+      width: 100%;
+    }
+    .btn-save-extra {
+      height: 40px;
+      border: none;
+      border-radius: 10px;
+      background: var(--emerald);
+      color: #04130D;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .day-scroller {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .day-scroller::-webkit-scrollbar { display: none; }
+    .day-pill {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 99px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .day-pill.active {
+      background: #FFFFFF;
+      color: #09090B;
+      border-color: #FFFFFF;
+    }
+
+    .day-strip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+
+    /* LISTA OPERATIVA CLIENTI */
+    .client-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .client-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .client-row.done {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0%, var(--surface) 100%);
+    }
+    .client-row.done.is-fido {
+      border-color: rgba(167, 139, 250, 0.55);
+      background: linear-gradient(90deg, rgba(167, 139, 250, 0.10) 0%, var(--surface) 100%);
+    }
+
+    .row-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .client-identity {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .tier-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .td-A { background: var(--sc-gold-soft); color: var(--sc-gold); border: 1px solid rgba(245, 158, 11, 0.4); }
+    .td-B { background: var(--sc-red-soft); color: #FDA4AF; border: 1px solid rgba(225, 29, 46, 0.4); }
+    .td-C { background: var(--surface-elevated); color: var(--text-dim); border: 1px solid var(--border); }
+    .td-EX { background: var(--emerald-soft); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .c-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .c-meta {
+      font-size: 0.73rem;
+      color: var(--text-dim);
+      margin-top: 1px;
+    }
+
+    .recovery-figure {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .rec-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+    }
+    .rec-amount {
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .rec-delta {
+      font-size: 0.69rem;
+      font-weight: 700;
+    }
+
+    .row-controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .inline-amt {
+      height: 36px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #FFFFFF;
+      padding: 0 10px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      width: 100%;
+      min-width: 0;
+    }
+    .inline-amt:focus { outline: none; border-color: var(--sc-gold); }
+
+    .pill-pay {
+      height: 36px;
+      padding: 0 11px;
+      border-radius: 10px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pill-pay.fido {
+      background: var(--violet-soft);
+      border-color: rgba(167, 139, 250, 0.5);
+      color: #DDD6FE;
+    }
+
+    .btn-tick {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .client-row.done .btn-tick {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #04130D;
+    }
+    .client-row.done.is-fido .btn-tick {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #09090B;
+    }
+
+    /* TESSERA 2: STRATEGIE DI RECUPERO */
+    .strat-intro-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--sc-red);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .strat-intro-box h2 {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--sc-gold);
+      margin-bottom: 4px;
+    }
+    .strat-intro-box p {
+      font-size: 0.83rem;
+      color: var(--text-dim);
+    }
+
+    .strat-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .strat-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .strat-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .strat-chip {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .strat-impact {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--emerald);
+    }
+    .strat-item h3 {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+    .strat-item p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+    .strat-notes {
+      background: var(--surface-elevated);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 0.78rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- TOP BAR -->
+    <header class="top-nav">
+      <div class="brand-id">
+        <svg class="sc-badge-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-label="Logo San Carlo">
+          <ellipse cx="60" cy="60" rx="56" ry="44" fill="#E11D2E" stroke="#F59E0B" stroke-width="5"/>
+          <ellipse cx="60" cy="60" rx="46" ry="34" fill="#0B193D" stroke="#FFFFFF" stroke-width="2"/>
+          <text x="60" y="54" text-anchor="middle" fill="#FFFFFF" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="18" letter-spacing="0.5">SAN</text>
+          <text x="60" y="75" text-anchor="middle" fill="#F59E0B" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="18" letter-spacing="0.5">CARLO</text>
+        </svg>
+        <div>
+          <div class="brand-title">San Carlo Next</div>
+          <div class="brand-caption">Base 8.871 € → Target 12.500 €</div>
+        </div>
+      </div>
+
+      <div class="top-btns">
+        <button class="icon-action" onclick="exportCSV()">CSV</button>
+        <button class="icon-action danger" onclick="resetAll()">Reset</button>
+      </div>
+    </header>
+
+    <!-- HERO COCKPIT CON ANELLO CIRCOLARE -->
+    <section class="cockpit-card">
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id="scRingGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#E11D2E" />
+              <stop offset="55%" stop-color="#F59E0B" />
+              <stop offset="100%" stop-color="#10B981" />
+            </linearGradient>
+          </defs>
+          <circle class="ring-bg" cx="60" cy="60" r="54" />
+          <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="54" />
+        </svg>
+        <div class="ring-center">
+          <span class="ring-pct mono" id="ringPct">71.0%</span>
+          <span class="ring-lbl">Target</span>
+        </div>
+      </div>
+
+      <div class="cockpit-stats">
+        <div class="main-revenue-block">
+          <div class="rev-kicker">Fatturato Mese Attuale</div>
+          <div class="rev-big mono" id="kpiMonthNow">8.871,00 €</div>
+          <div class="rev-sub mono" id="kpiRouteAdded">Giro: +0,00 € (Diretto: 0 € • Fido: 0 €)</div>
+        </div>
+
+        <div class="sub-metrics-row">
+          <div class="mini-stat">
+            <div class="mini-lbl">Mancante 12.500 €</div>
+            <div class="mini-val mono" style="color:var(--sc-gold)" id="kpiRemGoal">3.629,00 €</div>
+            <div class="mini-hint" id="kpiRemSub">Su 64 clienti</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-lbl">Fido Disponibile</div>
+            <div class="mini-val mono" style="color:#DDD6FE" id="kpiFidoRem">300,00 €</div>
+            <div class="mini-hint mono" id="kpiFidoUsed">Usato: 0 / 300 €</div>
+          </div>
+
+          <div class="mini-stat">
+            <div class="mini-lbl">Differenza Piano</div>
+            <div class="mini-val mono" id="kpiVar">0,00 €</div>
+            <div class="mini-hint mono" id="kpiMonthEst">Stima: 12.551 €</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DUE TESSERE INDIPENDENTI -->
+    <nav class="tessera-switcher">
+      <button class="tessera-btn active" id="tab-dashboard" onclick="openTessera('dashboard')">
+        <span>Clienti</span>
+        <span class="tessera-count mono" id="badgeCount">0/64</span>
+      </button>
+      <button class="tessera-btn" id="tab-strategie" onclick="openTessera('strategie')">
+        <span>Strategie Recupero</span>
+        <span class="tessera-count">4</span>
+      </button>
+    </nav>
+
+    <!-- TESSERA 1: LISTA CLIENTI -->
+    <section id="tessera-dashboard" class="tessera-panel active">
+      <div class="quick-bar">
+        <input class="search-field" type="search" id="searchInput" placeholder="Cerca cliente..." oninput="onSearch(this.value)" />
+        <button class="btn-toggle-extra" onclick="toggleExtraDrawer()">+ Extra</button>
+      </div>
+
+      <div class="extra-drawer" id="extraDrawer">
+        <div class="extra-grid">
+          <select class="ctrl-select" id="exDay">
+            <option value="Martedì">Martedì</option>
+            <option value="Mercoledì">Mercoledì</option>
+            <option value="Giovedì">Giovedì</option>
+            <option value="Venerdì">Venerdì</option>
+            <option value="Sabato">Sabato</option>
+          </select>
+          <select class="ctrl-select" id="exTier">
+            <option value="A">Fascia A (100€)</option>
+            <option value="B" selected>Fascia B (50€)</option>
+            <option value="C">Fascia C (25€)</option>
+          </select>
+          <input class="ctrl-input full" type="text" id="exName" placeholder="Nome cliente extra..." />
+          <input class="ctrl-input mono" type="number" id="exAmt" placeholder="Importo €" step="0.01" min="0" />
+          <select class="ctrl-select" id="exPay">
+            <option value="cash">Diretto</option>
+            <option value="fido">Con Fido</option>
+          </select>
+          <button class="btn-save-extra full" onclick="addExtra()">+ Aggiungi al fatturato</button>
+        </div>
+      </div>
+
+      <div class="day-scroller" id="dayTabs"></div>
+      <div class="day-strip" id="dayBanner"></div>
+      <div class="client-stream" id="clientList"></div>
+    </section>
+
+    <!-- TESSERA 2: STRATEGIE DI RECUPERO -->
+    <section id="tessera-strategie" class="tessera-panel">
+      <div class="strat-intro-box">
+        <h2>Piano di Recupero Differenze San Carlo</h2>
+        <p id="stratIntro">Partenza consolidata: <strong>8.871,00 €</strong> verso <strong>12.500,00 €</strong>.</p>
+      </div>
+      <div class="strat-stack" id="stratCards"></div>
+    </section>
+
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    const BASE_CLIENTS = [{"id": 1, "day": "Martedì", "tier": "A", "name": "Anemola", "min": 100, "target": 125}, {"id": 2, "day": "Martedì", "tier": "A", "name": "Melon", "min": 100, "target": 125}, {"id": 3, "day": "Martedì", "tier": "A", "name": "Gml", "min": 100, "target": 125}, {"id": 4, "day": "Martedì", "tier": "B", "name": "Calenda", "min": 50, "target": 70}, {"id": 5, "day": "Martedì", "tier": "B", "name": "Insomnia", "min": 50, "target": 70}, {"id": 6, "day": "Martedì", "tier": "B", "name": "Mastroianni", "min": 50, "target": 70}, {"id": 7, "day": "Martedì", "tier": "B", "name": "Insolito", "min": 50, "target": 70}, {"id": 8, "day": "Martedì", "tier": "B", "name": "Asd soccer", "min": 50, "target": 70}, {"id": 9, "day": "Martedì", "tier": "B", "name": "Sartal", "min": 50, "target": 70}, {"id": 10, "day": "Martedì", "tier": "B", "name": "Nice bar", "min": 50, "target": 70}, {"id": 11, "day": "Martedì", "tier": "B", "name": "Officina dei sapori", "min": 50, "target": 70}, {"id": 12, "day": "Martedì", "tier": "C", "name": "Mario russo", "min": 25, "target": 30}, {"id": 13, "day": "Martedì", "tier": "C", "name": "Arena di helas", "min": 25, "target": 30}, {"id": 14, "day": "Martedì", "tier": "C", "name": "Aurora", "min": 25, "target": 30}, {"id": 15, "day": "Martedì", "tier": "C", "name": "La nuova Caffetteria", "min": 25, "target": 30}, {"id": 16, "day": "Martedì", "tier": "C", "name": "De cristofaro", "min": 25, "target": 30}, {"id": 17, "day": "Mercoledì", "tier": "A", "name": "Tartaglione", "min": 100, "target": 125}, {"id": 18, "day": "Mercoledì", "tier": "A", "name": "Scialla", "min": 100, "target": 125}, {"id": 19, "day": "Mercoledì", "tier": "B", "name": "Circolo Dopo lavoro", "min": 50, "target": 70}, {"id": 20, "day": "Mercoledì", "tier": "B", "name": "Musone", "min": 50, "target": 70}, {"id": 21, "day": "Mercoledì", "tier": "B", "name": "Punto di ristoro", "min": 50, "target": 70}, {"id": 22, "day": "Mercoledì", "tier": "C", "name": "Perla del grano", "min": 25, "target": 30}, {"id": 23, "day": "Mercoledì", "tier": "C", "name": "Cieci", "min": 25, "target": 30}, {"id": 24, "day": "Mercoledì", "tier": "C", "name": "Antica caffetteria", "min": 25, "target": 30}, {"id": 25, "day": "Mercoledì", "tier": "C", "name": "Fermento", "min": 25, "target": 30}, {"id": 26, "day": "Mercoledì", "tier": "C", "name": "Elleffe", "min": 25, "target": 30}, {"id": 27, "day": "Mercoledì", "tier": "C", "name": "Coffe talk", "min": 25, "target": 30}, {"id": 28, "day": "Mercoledì", "tier": "C", "name": "Moretta", "min": 25, "target": 30}, {"id": 29, "day": "Mercoledì", "tier": "C", "name": "Bar k", "min": 25, "target": 30}, {"id": 30, "day": "Mercoledì", "tier": "C", "name": "Pizzicagnolo", "min": 25, "target": 30}, {"id": 31, "day": "Mercoledì", "tier": "C", "name": "Caffè primavera", "min": 25, "target": 30}, {"id": 32, "day": "Giovedì", "tier": "A", "name": "Di Giovanni frutteria", "min": 100, "target": 125}, {"id": 33, "day": "Giovedì", "tier": "B", "name": "Kore", "min": 50, "target": 70}, {"id": 34, "day": "Giovedì", "tier": "B", "name": "Di fuccia", "min": 50, "target": 70}, {"id": 35, "day": "Giovedì", "tier": "B", "name": "Erreggi", "min": 50, "target": 70}, {"id": 36, "day": "Giovedì", "tier": "B", "name": "Smoke shop", "min": 50, "target": 70}, {"id": 37, "day": "Giovedì", "tier": "C", "name": "Vistoso", "min": 25, "target": 30}, {"id": 38, "day": "Giovedì", "tier": "C", "name": "Agenziano Maria", "min": 25, "target": 30}, {"id": 39, "day": "Giovedì", "tier": "C", "name": "Oasi", "min": 25, "target": 30}, {"id": 40, "day": "Giovedì", "tier": "C", "name": "Primo caffe", "min": 25, "target": 30}, {"id": 41, "day": "Giovedì", "tier": "C", "name": "Garofalo", "min": 25, "target": 30}, {"id": 42, "day": "Venerdì", "tier": "A", "name": "Drink and more", "min": 100, "target": 125}, {"id": 43, "day": "Venerdì", "tier": "B", "name": "Marzia caffe", "min": 50, "target": 70}, {"id": 44, "day": "Venerdì", "tier": "B", "name": "La luna", "min": 50, "target": 70}, {"id": 45, "day": "Venerdì", "tier": "B", "name": "Munno nicola", "min": 50, "target": 70}, {"id": 46, "day": "Venerdì", "tier": "B", "name": "Old market", "min": 50, "target": 70}, {"id": 47, "day": "Venerdì", "tier": "B", "name": "Ambrosino", "min": 50, "target": 70}, {"id": 48, "day": "Venerdì", "tier": "B", "name": "Bar brule", "min": 50, "target": 70}, {"id": 49, "day": "Venerdì", "tier": "B", "name": "Coffe break", "min": 50, "target": 70}, {"id": 50, "day": "Venerdì", "tier": "B", "name": "Flii d amico", "min": 50, "target": 70}, {"id": 51, "day": "Venerdì", "tier": "C", "name": "Athena", "min": 25, "target": 30}, {"id": 52, "day": "Venerdì", "tier": "C", "name": "Fisio", "min": 25, "target": 30}, {"id": 53, "day": "Venerdì", "tier": "C", "name": "Le Bon", "min": 25, "target": 30}, {"id": 54, "day": "Venerdì", "tier": "C", "name": "Segreti e bugie", "min": 25, "target": 30}, {"id": 55, "day": "Venerdì", "tier": "C", "name": "Bar la rotonda", "min": 25, "target": 30}, {"id": 56, "day": "Venerdì", "tier": "C", "name": "La rinascita", "min": 25, "target": 30}, {"id": 57, "day": "Venerdì", "tier": "C", "name": "Marzano", "min": 25, "target": 30}, {"id": 58, "day": "Venerdì", "tier": "C", "name": "Borrozzino", "min": 25, "target": 30}, {"id": 59, "day": "Venerdì", "tier": "C", "name": "Tab di santo", "min": 25, "target": 30}, {"id": 60, "day": "Sabato", "tier": "A", "name": "Pimo", "min": 100, "target": 125}, {"id": 61, "day": "Sabato", "tier": "B", "name": "Maudit", "min": 50, "target": 70}, {"id": 62, "day": "Sabato", "tier": "B", "name": "Bar colors", "min": 50, "target": 70}, {"id": 63, "day": "Sabato", "tier": "C", "name": "Mogago", "min": 25, "target": 30}, {"id": 64, "day": "Sabato", "tier": "C", "name": "Fantasia dei dolci", "min": 25, "target": 30}];
+    const STORAGE_KEY = "san_carlo_next_v9";
+    const ALREADY_BILLED = 8871;
+    const MONTHLY_GOAL = 12500;
+    const FIDO_LIMIT = 300;
+    const DAYS = ["Tutti", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 54;
+
+    let state = {
+      activeTessera: "dashboard",
+      activeDay: "Tutti",
+      searchQuery: "",
+      records: {},
+      extras: []
+    };
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          state = { ...state, ...JSON.parse(saved), searchQuery: "" };
+        }
+      } catch (e) {}
+    }
+
+    function saveState() {
+      try {
+        const toSave = {
+          activeTessera: state.activeTessera,
+          activeDay: state.activeDay,
+          records: state.records,
+          extras: state.extras
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      } catch (e) {}
+    }
+
+    function fmt(num) {
+      return num.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+    }
+
+    function openTessera(name) {
+      state.activeTessera = name;
+      saveState();
+      render();
+    }
+
+    function toggleExtraDrawer() {
+      document.getElementById("extraDrawer").classList.toggle("open");
+    }
+
+    function onSearch(val) {
+      state.searchQuery = val.trim().toLowerCase();
+      render();
+    }
+
+    function getAllItems() {
+      const base = BASE_CLIENTS.map(c => {
+        const rec = state.records[c.id] || { done: false, actual: "", payMode: "cash" };
+        return {
+          ...c,
+          isExtra: false,
+          done: !!rec.done,
+          actual: rec.actual,
+          payMode: rec.payMode || "cash"
+        };
+      });
+      const ext = state.extras.map(e => ({
+        ...e,
+        isExtra: true,
+        done: true,
+        actual: parseFloat(e.actual) || 0,
+        payMode: e.payMode || "cash"
+      }));
+      return [...base, ...ext];
+    }
+
+    function computeModel() {
+      const items = getAllItems();
+      let routeDoneSum = 0;
+      let cashSum = 0;
+      let fidoSum = 0;
+      let doneCount = 0;
+      let unvisitedWeight = 0;
+      let unvisitedCount = 0;
+
+      items.forEach(item => {
+        if (item.done) {
+          const val = parseFloat(item.actual);
+          const eff = isNaN(val) ? item.target : val;
+          routeDoneSum += eff;
+          if (item.payMode === "fido") fidoSum += eff;
+          else cashSum += eff;
+          doneCount++;
+        } else {
+          unvisitedWeight += item.target;
+          unvisitedCount++;
+        }
+      });
+
+      const currentMonthTotal = ALREADY_BILLED + routeDoneSum;
+      const remainingToMonthlyGoal = Math.max(0, MONTHLY_GOAL - currentMonthTotal);
+      const multiplier = unvisitedWeight > 0 ? (remainingToMonthlyGoal / unvisitedWeight) : 0;
+
+      items.forEach(item => {
+        if (item.done) {
+          const val = parseFloat(item.actual);
+          item.effective = isNaN(val) ? item.target : val;
+          item.recoveryAmount = item.effective;
+          item.recoveryDiff = item.effective - item.target;
+        } else {
+          item.recoveryAmount = Math.round(item.target * multiplier * 100) / 100;
+          item.recoveryDiff = Math.round((item.recoveryAmount - item.target) * 100) / 100;
+          item.effective = item.recoveryAmount;
+        }
+      });
+
+      const baseDonePlanned = items.filter(i => i.done && !i.isExtra).reduce((s, i) => s + i.target, 0);
+      const variance = routeDoneSum - baseDonePlanned;
+      const fidoRemaining = Math.max(0, FIDO_LIMIT - fidoSum);
+      const fidoOver = Math.max(0, fidoSum - FIDO_LIMIT);
+      const estimatedMonthEnd = currentMonthTotal + (unvisitedCount > 0 ? remainingToMonthlyGoal : 0);
+
+      return {
+        items,
+        routeDoneSum,
+        currentMonthTotal,
+        cashSum,
+        fidoSum,
+        fidoRemaining,
+        fidoOver,
+        doneCount,
+        totalCount: items.length,
+        remainingToMonthlyGoal,
+        unvisitedCount,
+        variance,
+        estimatedMonthEnd
+      };
+    }
+
+    function renderStrategies(plan) {
+      const unvisited = plan.items.filter(i => !i.done);
+      const unvisitedA = unvisited.filter(i => i.tier === "A");
+      const unvisitedB = unvisited.filter(i => i.tier === "B");
+      const unvisitedC = unvisited.filter(i => i.tier === "C");
+
+      const gapToRecover = Math.max(0, -plan.variance);
+      const remGoal = plan.remainingToMonthlyGoal;
+
+      document.getElementById("stratIntro").innerHTML =
+        `Fatturato attuale: <strong class="mono">${fmt(plan.currentMonthTotal)}</strong> / <strong class="mono">12.500,00 €</strong> ` +
+        `(mancano <strong class="mono">${fmt(remGoal)}</strong> su <strong>${plan.unvisitedCount} clienti</strong>). ` +
+        (gapToRecover > 0
+          ? `Differenza da recuperare: <strong class="mono" style="color:#FDA4AF">${fmt(gapToRecover)}</strong>.`
+          : `Sei in linea o sopra il piano (<strong class="mono" style="color:var(--emerald)">+${fmt(Math.max(0, plan.variance))}</strong>).`);
+
+      const fidoAvail = plan.fidoRemaining;
+      const fidoClientsCount = Math.min(unvisitedA.length + unvisitedB.length, Math.floor(fidoAvail / 50));
+      const fidoExamples = [...unvisitedA, ...unvisitedB].slice(0, 4).map(c => `${c.name} (${c.day})`).join(", ") || "Nessun cliente A/B rimanente";
+
+      const upsellA = unvisitedA.length > 0 ? Math.ceil((gapToRecover > 0 ? gapToRecover : 160) / unvisitedA.length) : 0;
+      const listA = unvisitedA.slice(0, 5).map(c => `${c.name} (${c.day})`).join(", ") || "Tutti i clienti A visitati";
+
+      const bNeeded = gapToRecover > 0 ? Math.ceil(gapToRecover / 15) : Math.min(6, unvisitedB.length);
+      const listB = unvisitedB.slice(0, 5).map(c => `${c.name} (${c.day})`).join(", ") || "Tutti i clienti B visitati";
+
+      const extraNeeded50 = Math.ceil((gapToRecover > 0 ? gapToRecover : 150) / 50);
+
+      const cards = [
+        {
+          chip: "LEVA 1 • PLAFOND FIDO 300 €",
+          chipStyle: "background:var(--violet-soft); color:#DDD6FE;",
+          impact: fidoAvail > 0 ? `Fino a +${fmt(Math.min(fidoAvail, fidoClientsCount * 50))}` : "Esaurito",
+          title: fidoAvail > 0 ? `Attiva fino a ${fmt(fidoAvail)} di ordini a fido` : "Plafond fido da 300 € esaurito",
+          desc: fidoAvail > 0
+            ? `Hai ancora ${fmt(fidoAvail)} di fido disponibile che entra subito nel fatturato per arrivare a 12.500,00 € su clienti affidabili.`
+            : `Hai già impiegato ${fmt(plan.fidoSum)} di fido. Prosegui con incassi diretti o visite extra.`,
+          note: `Clienti consigliati: ${fidoExamples} • Seleziona "FIDO" sulla scheda cliente.`
+        },
+        {
+          chip: "LEVA 2 • SPINTA FASCIA A",
+          chipStyle: "background:var(--sc-gold-soft); color:var(--sc-gold);",
+          impact: unvisitedA.length > 0 ? `+${fmt(unvisitedA.length * upsellA)}` : "Completata",
+          title: unvisitedA.length > 0 ? `+${upsellA} € per ordine sui ${unvisitedA.length} clienti A rimasti` : "Fascia A completata",
+          desc: `Spingi cartoni ad alta rotazione San Carlo (Classica, Rustica, 1936, Vivace) sui clienti top per assorbire rapidamente eventuali differenze.`,
+          note: `Prossimi clienti A: ${listA} • Obiettivo medio da 125 € a ${125 + upsellA} €.`
+        },
+        {
+          chip: "LEVA 3 • UPSELL FASCIA B (+15 €)",
+          chipStyle: "background:var(--sc-red-soft); color:#FDA4AF;",
+          impact: `+${fmt(bNeeded * 15)}`,
+          title: `Aumenta di +15 € su ${bNeeded} clienti B`,
+          desc: `Aggiungi un espositore da banco o una referenza extra da 15 € sui clienti B per compensare eventuali ordini sotto soglia.`,
+          note: `Clienti B in programma: ${listB} • Passaggio da 70 € a 85 €.`
+        },
+        {
+          chip: "LEVA 4 • VISITE EXTRA & FASCIA C",
+          chipStyle: "background:var(--emerald-soft); color:var(--emerald);",
+          impact: `+${fmt(extraNeeded50 * 50)}`,
+          title: `Inserisci ${extraNeeded50} visite extra da 50 € (o +10 € su Fascia C)`,
+          desc: `Usa il pulsante "+ Extra" nella scheda Clienti per inserire consegne fuori giro e superare i 12.500,00 € totali.`,
+          note: `Giornate con più spazio: Giovedì e Sabato • Oppure +10 € su ${Math.min(unvisitedC.length, 10)} clienti C.`
+        }
+      ];
+
+      const container = document.getElementById("stratCards");
+      container.innerHTML = "";
+      cards.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "strat-item";
+        div.innerHTML = `
+          <div class="strat-head">
+            <span class="strat-chip" style="${c.chipStyle}">${c.chip}</span>
+            <span class="strat-impact mono">${c.impact}</span>
+          </div>
+          <h3>${c.title}</h3>
+          <p>${c.desc}</p>
+          <div class="strat-notes">${c.note}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function render() {
+      const plan = computeModel();
+
+      const pct = Math.min(100, (plan.currentMonthTotal / MONTHLY_GOAL) * 100);
+      const offset = RING_CIRCUMFERENCE * (1 - pct / 100);
+      document.getElementById("ringFg").style.strokeDashoffset = offset.toFixed(2);
+      document.getElementById("ringPct").textContent = pct.toFixed(1) + "%";
+
+      document.getElementById("kpiMonthNow").textContent = fmt(plan.currentMonthTotal);
+      document.getElementById("kpiRouteAdded").textContent = `Giro: +${plan.routeDoneSum.toFixed(0)} € (Diretto: ${plan.cashSum.toFixed(0)} € • Fido: ${plan.fidoSum.toFixed(0)} €)`;
+      document.getElementById("kpiRemGoal").textContent = fmt(plan.remainingToMonthlyGoal);
+      document.getElementById("kpiRemSub").textContent = plan.unvisitedCount > 0 ? `Su ${plan.unvisitedCount} clienti` : "Completato";
+
+      document.getElementById("kpiFidoRem").textContent = fmt(plan.fidoRemaining);
+      document.getElementById("kpiFidoUsed").textContent = plan.fidoOver > 0
+        ? `Sforato +${plan.fidoOver.toFixed(0)} €`
+        : `Usato: ${plan.fidoSum.toFixed(0)} / 300 €`;
+
+      const varEl = document.getElementById("kpiVar");
+      varEl.textContent = `${plan.variance >= 0 ? "+" : ""}${fmt(plan.variance)}`;
+      varEl.style.color = plan.variance >= 0 ? "var(--emerald)" : "#FDA4AF";
+      document.getElementById("kpiMonthEst").textContent = `Stima: ${plan.estimatedMonthEnd.toFixed(0)} €`;
+
+      document.getElementById("badgeCount").textContent = `${plan.doneCount}/${plan.totalCount}`;
+
+      const isDash = state.activeTessera === "dashboard";
+      document.getElementById("tessera-dashboard").classList.toggle("active", isDash);
+      document.getElementById("tessera-strategie").classList.toggle("active", !isDash);
+      document.getElementById("tab-dashboard").classList.toggle("active", isDash);
+      document.getElementById("tab-strategie").classList.toggle("active", !isDash);
+
+      const tabsEl = document.getElementById("dayTabs");
+      tabsEl.innerHTML = "";
+      DAYS.forEach(d => {
+        const btn = document.createElement("button");
+        btn.className = "day-pill" + (state.activeDay === d ? " active" : "");
+        btn.textContent = d;
+        btn.onclick = () => { state.activeDay = d; render(); };
+        tabsEl.appendChild(btn);
+      });
+
+      let filtered = state.activeDay === "Tutti"
+        ? plan.items
+        : plan.items.filter(i => i.day === state.activeDay);
+
+      if (state.searchQuery) {
+        filtered = filtered.filter(i => i.name.toLowerCase().includes(state.searchQuery));
+      }
+
+      const dayDone = filtered.filter(i => i.done).reduce((s, i) => s + i.effective, 0);
+      const dayRem = filtered.filter(i => !i.done).reduce((s, i) => s + i.recoveryAmount, 0);
+
+      document.getElementById("dayBanner").innerHTML = `
+        <div><strong>${state.activeDay === "Tutti" ? "Tutti i giorni" : state.activeDay}</strong> • ${filtered.length} clienti</div>
+        <div class="mono">Fatto: <strong style="color:var(--emerald)">${fmt(dayDone)}</strong> | Da fare: <strong style="color:var(--sc-gold)">${fmt(dayRem)}</strong></div>
+      `;
+
+      const listEl = document.getElementById("clientList");
+      listEl.innerHTML = "";
+
+      filtered.forEach(item => {
+        const isFido = item.payMode === "fido";
+        const row = document.createElement("div");
+        row.className = "client-row" + (item.done ? " done" : "") + (isFido ? " is-fido" : "");
+
+        const dotClass = item.isExtra ? "tier-dot td-EX" : `tier-dot td-${item.tier}`;
+        const dotText = item.isExtra ? "EX" : item.tier;
+
+        const diff = item.recoveryDiff;
+        const deltaHtml = !item.done
+          ? (diff > 0.01
+              ? `<div class="rec-delta mono" style="color:var(--sc-gold)">+${diff.toFixed(2)} € recupero</div>`
+              : (diff < -0.01
+                  ? `<div class="rec-delta mono" style="color:var(--emerald)">${diff.toFixed(2)} € vs piano</div>`
+                  : `<div class="rec-delta mono" style="color:var(--text-muted)">0,00 € diff.</div>`))
+          : `<div class="rec-delta" style="color:var(--emerald)">${item.payMode === "fido" ? "Fido" : "Diretto"}</div>`;
+
+        const rightLabel = item.done ? "Fatturato:" : "Da fare per recupero:";
+        const rightAmount = item.done ? fmt(item.effective) : fmt(item.recoveryAmount);
+        const amountColor = item.done ? "var(--emerald)" : (diff > 0.01 ? "var(--sc-gold)" : "#FFFFFF");
+
+        row.innerHTML = `
+          <div class="row-main">
+            <div class="client-identity">
+              <div class="${dotClass}">${dotText}</div>
+              <div style="min-width:0;">
+                <div class="c-title">${item.name}</div>
+                <div class="c-meta">${item.day} • Min ${item.min} € • Piano ${item.target} €</div>
+              </div>
+            </div>
+
+            <div class="recovery-figure">
+              <div class="rec-tag">${rightLabel}</div>
+              <div class="rec-amount mono" style="color:${amountColor}">${rightAmount}</div>
+              ${deltaHtml}
+            </div>
+          </div>
+
+          <div class="row-controls">
+            <input class="inline-amt" type="number" step="0.01" min="0"
+              placeholder="Es. ${item.recoveryAmount.toFixed(2)} €"
+              value="${item.done ? item.effective : ''}"
+              onchange="updateAmount(${item.id}, ${item.isExtra}, this.value)" />
+            <button class="pill-pay ${isFido ? 'fido' : ''}"
+              onclick="togglePayMode(${item.id}, ${item.isExtra}, ${item.recoveryAmount})">
+              ${isFido ? "💳 Fido" : "💵 Diretto"}
+            </button>
+            ${!item.isExtra
+              ? `<button class="btn-tick" title="Conferma" onclick="toggleDone(${item.id}, ${item.recoveryAmount})">✓</button>`
+              : `<button class="btn-tick" style="background:var(--sc-red-soft);color:#FCA5A5;border-color:rgba(225,29,46,0.4);" onclick="removeExtra(${item.id})">✕</button>`
+            }
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+
+      renderStrategies(plan);
+    }
+
+    function updateAmount(id, isExtra, val) {
+      const num = parseFloat(val);
+      if (isExtra) {
+        const ex = state.extras.find(e => e.id === id);
+        if (ex) ex.actual = isNaN(num) ? 0 : num;
+      } else {
+        const prev = state.records[id] || { payMode: "cash" };
+        if (val === "" || isNaN(num)) {
+          delete state.records[id];
+        } else {
+          state.records[id] = { done: true, actual: num, payMode: prev.payMode || "cash" };
+        }
+      }
+      saveState();
+      render();
+    }
+
+    function togglePayMode(id, isExtra, suggested) {
+      if (isExtra) {
+        const ex = state.extras.find(e => e.id === id);
+        if (ex) ex.payMode = ex.payMode === "fido" ? "cash" : "fido";
+      } else {
+        const curr = state.records[id];
+        if (!curr) {
+          state.records[id] = { done: true, actual: suggested, payMode: "fido" };
+        } else {
+          curr.payMode = curr.payMode === "fido" ? "cash" : "fido";
+        }
+      }
+      saveState();
+      render();
+    }
+
+    function toggleDone(id, suggested) {
+      const curr = state.records[id];
+      if (curr && curr.done) {
+        delete state.records[id];
+      } else {
+        state.records[id] = {
+          done: true,
+          actual: suggested,
+          payMode: (curr && curr.payMode) ? curr.payMode : "cash"
+        };
+      }
+      saveState();
+      render();
+    }
+
+    function addExtra() {
+      const day = document.getElementById("exDay").value;
+      const name = document.getElementById("exName").value.trim() || "Cliente Extra";
+      const tier = document.getElementById("exTier").value;
+      const payMode = document.getElementById("exPay").value;
+      const minMap = { A: 100, B: 50, C: 25 };
+      const rawAmt = parseFloat(document.getElementById("exAmt").value);
+      const actual = isNaN(rawAmt) ? minMap[tier] : rawAmt;
+
+      state.extras.push({
+        id: Date.now(),
+        day,
+        tier,
+        name,
+        min: minMap[tier],
+        target: minMap[tier],
+        actual,
+        payMode
+      });
+
+      document.getElementById("exName").value = "";
+      document.getElementById("exAmt").value = "";
+      document.getElementById("extraDrawer").classList.remove("open");
+      saveState();
+      render();
+    }
+
+    function removeExtra(id) {
+      state.extras = state.extras.filter(e => e.id !== id);
+      saveState();
+      render();
+    }
+
+    function resetAll() {
+      if (confirm("Vuoi azzerare gli incassi del giro, il fido utilizzato e le visite extra mantenendo la base di 8.871,00 €?")) {
+        state.records = {};
+        state.extras = [];
+        saveState();
+        render();
+      }
+    }
+
+    function exportCSV() {
+      const plan = computeModel();
+      let csv = "Giorno;Cliente;Fascia;Tipo;Modalita_Pagamento;Minimo;Target_Base;Da_Fare_Per_Recupero_o_Reale;Differenza_Recupero;Stato\n";
+      plan.items.forEach(i => {
+        const payLabel = i.done ? (i.payMode === "fido" ? "Fido" : "Diretto") : "Da definire";
+        csv += `${i.day};${i.name};${i.tier};${i.isExtra ? 'Extra' : 'Giro'};${payLabel};${i.min};${i.target};${i.recoveryAmount.toFixed(2).replace('.', ',')};\${i.recoveryDiff.toFixed(2).replace('.', ',')};\${i.done ? 'Chiuso' : 'Da visitare'}\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "san_carlo_next_8871_12500.csv";
+      a.click();
+    }
+
+    loadState();
+    render();
+  </script>
+</body>
+</html>

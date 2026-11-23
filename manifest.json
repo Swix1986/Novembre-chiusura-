@@ -1,0 +1,33 @@
+{
+  "id": "./",
+  "name": "San Carlo Next — Giro & Recupero",
+  "short_name": "San Carlo Next",
+  "description": "App mobile-first San Carlo con layout rivoluzionato: anello di avanzamento 8.871 € -> 12.500 €, lista operativa clienti con importo da fare per recupero, fido 300 € e strategie.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
+  "lang": "it",
+  "dir": "ltr",
+  "categories": [
+    "business",
+    "finance",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
